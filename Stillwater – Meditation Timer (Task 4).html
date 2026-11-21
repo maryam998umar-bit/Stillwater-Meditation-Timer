@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stillwater – Meditation Timer</title>
+<style>
+:root{--bg1:#e9efe9;--bg2:#cfdcd6;--bg3:#a9c0bd;--ink:#1f3a3a;--sub:#4a6667;--ring:#2f6f6a;--track:rgba(31,58,58,.12);--card:rgba(255,255,255,.55);--btn:#2f6f6a;--btnink:#fff;--sheet:#f6faf8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#10201f;--bg2:#16302f;--bg3:#1f4545;--ink:#e6f1ee;--sub:#a5c0bc;--ring:#8fd0c4;--track:rgba(230,241,238,.14);--card:rgba(255,255,255,.07);--btn:#8fd0c4;--btnink:#0f2423;--sheet:#14292a}}
+:root[data-theme="dark"]{--bg1:#10201f;--bg2:#16302f;--bg3:#1f4545;--ink:#e6f1ee;--sub:#a5c0bc;--ring:#8fd0c4;--track:rgba(230,241,238,.14);--card:rgba(255,255,255,.07);--btn:#8fd0c4;--btnink:#0f2423;--sheet:#14292a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Georgia,"Iowan Old Style",serif;color:var(--ink);background:linear-gradient(170deg,var(--bg1),var(--bg2) 55%,var(--bg3));display:flex;justify-content:center;overflow:hidden}
+.app{width:100%;max-width:420px;height:100%;position:relative;display:flex;flex-direction:column;align-items:center;padding:22px 24px 28px;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(40px);opacity:.5;background:var(--bg3);animation:drift 14s ease-in-out infinite alternate}
+.o1{width:260px;height:260px;top:-60px;right:-80px}.o2{width:220px;height:220px;bottom:-50px;left:-70px;animation-delay:-7s}
+@keyframes drift{to{transform:translate(-24px,30px) scale(1.1)}}
+header{width:100%;display:flex;justify-content:space-between;align-items:center;z-index:1}
+h1{font-size:20px;font-weight:400;margin:0;letter-spacing:.3px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
+.icon{width:44px;height:44px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:18px}
+.msg{margin:18px 0 0;font-size:15px;color:var(--sub);text-align:center;min-height:22px;z-index:1;font-style:italic}
+.dial{position:relative;width:min(76vw,300px);aspect-ratio:1;margin:auto 0;z-index:1;display:grid;place-items:center}
+.dial svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.track{fill:none;stroke:var(--track);stroke-width:10}
+.prog{fill:none;stroke:var(--ring);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.breath{position:absolute;width:62%;aspect-ratio:1;border-radius:50%;background:var(--card)}
+.running .breath{animation:breathe 8s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.12)}}
+.time{position:relative;font-size:clamp(46px,16vw,64px);font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.state{position:relative;display:block;text-align:center;font-size:13px;color:var(--sub);margin-top:2px}
+.tw{position:relative;text-align:center}
+.chips{display:flex;gap:10px;z-index:1;margin-bottom:22px}
+.chip{padding:11px 18px;min-height:44px;border-radius:24px;background:var(--card);font-size:15px;transition:.2s}
+.chip[aria-pressed="true"]{background:var(--btn);color:var(--btnink)}
+.chip:disabled{opacity:.45;cursor:not-allowed}
+.ctrls{display:flex;align-items:center;gap:22px;z-index:1}
+.main{width:84px;height:84px;border-radius:50%;background:var(--btn);color:var(--btnink);font-size:15px;box-shadow:0 10px 24px rgba(31,58,58,.25);transition:transform .15s}
+.main:active{transform:scale(.94)}
+.side{width:56px;height:56px;border-radius:50%;background:var(--card);font-size:13px}
+.snd{margin-top:18px;z-index:1;font-size:14px;color:var(--sub);padding:10px 16px;min-height:44px;border-radius:22px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sheet);border-radius:26px 26px 0 0;padding:22px 24px 30px;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);z-index:5;box-shadow:0 -12px 40px rgba(0,0,0,.18)}
+.sheet.open{transform:none}
+.sheet h2{font-size:18px;font-weight:400;margin:0 0 14px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;padding:14px;min-height:56px;border-radius:16px;text-align:left;font-size:16px}
+.opt span.e{font-size:22px}
+.opt[aria-checked="true"]{background:var(--card);outline:2px solid var(--ring)}
+.sr{position:absolute;left:-9999px}
+@media (max-height:640px){.dial{width:200px}.msg{margin-top:8px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="app" id="app">
+  <div class="orb o1"></div><div class="orb o2"></div>
+  <header>
+    <h1>Stillwater</h1>
+    <button class="icon" id="theme" aria-label="Switch light or dark theme">◐</button>
+  </header>
+  <p class="msg" id="msg" aria-live="polite">Choose a length, then begin.</p>
+
+  <div class="dial" id="dial" role="timer" aria-label="Meditation progress">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="45"/><circle class="prog" id="prog" cx="50" cy="50" r="45"/></svg>
+    <div class="breath"></div>
+    <div class="tw"><div class="time" id="time">10:00</div><span class="state" id="state">Ready</span></div>
+  </div>
+
+  <div class="chips" role="group" aria-label="Duration">
+    <button class="chip" data-m="5" aria-pressed="false">5 min</button>
+    <button class="chip" data-m="10" aria-pressed="true">10 min</button>
+    <button class="chip" data-m="15" aria-pressed="false">15 min</button>
+  </div>
+
+  <div class="ctrls">
+    <button class="side" id="reset" aria-label="Reset timer">Reset</button>
+    <button class="main" id="main">Start</button>
+    <button class="side" id="plus" aria-label="Add one minute">+1 min</button>
+  </div>
+  <button class="snd" id="sndBtn">♪ Sound: <span id="sndName">Rain</span></button>
+
+  <div class="sheet" id="sheet" role="dialog" aria-label="Choose a sound" aria-hidden="true">
+    <h2>Background sound</h2>
+    <div role="radiogroup" aria-label="Sounds" id="opts"></div>
+  </div>
+</main>
+<script>
+const R=2*Math.PI*45,$=id=>document.getElementById(id);
+const prog=$('prog');prog.style.strokeDasharray=R;
+const sounds=[['🌧','Rain'],['🌊','Ocean'],['🌲','Forest'],['🎵','Soft music'],['🔇','Silence']];
+let total=600,left=600,timer=null,end=0;
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function draw(){$('time').textContent=fmt(left);prog.style.strokeDashoffset=R*(1-left/total)*-1+R*0;prog.style.strokeDashoffset=R*(1-left/total)}
+function setState(t,m,run){$('state').textContent=t;$('msg').textContent=m;$('app').classList.toggle('running',!!run)}
+function lock(v){document.querySelectorAll('.chip').forEach(c=>c.disabled=v)}
+function start(){end=Date.now()+left*1000;timer=setInterval(tick,250);$('main').textContent='Pause';lock(true);setState('Breathing','Breathe in slowly. Let go on the exhale.',true)}
+function pause(){clearInterval(timer);timer=null;$('main').textContent='Resume';setState('Paused','Paused. Resume whenever you are ready.',false)}
+function tick(){left=Math.max(0,Math.round((end-Date.now())/1000));draw();if(left<=0){clearInterval(timer);timer=null;$('main').textContent='Start';lock(false);setState('Complete','Session complete. Notice how you feel.',false);left=total;setTimeout(()=>{if(!timer){draw();$('state').textContent='Ready'}},4000)}}
+$('main').onclick=()=>timer?pause():start();
+$('reset').onclick=()=>{clearInterval(timer);timer=null;left=total;draw();$('main').textContent='Start';lock(false);setState('Ready','Choose a length, then begin.',false)};
+$('plus').onclick=()=>{total+=60;left+=60;if(timer)end+=60000;draw()};
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));c.setAttribute('aria-pressed','true');total=left=c.dataset.m*60;draw()});
+const o=$('opts');sounds.forEach(([e,n],i)=>{const b=document.createElement('button');b.className='opt';b.setAttribute('role','radio');b.setAttribute('aria-checked',i==0);b.innerHTML='<span class="e">'+e+'</span>'+n;b.onclick=()=>{o.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-checked','false'));b.setAttribute('aria-checked','true');$('sndName').textContent=n;toggle(false)};o.appendChild(b)});
+function toggle(v){$('sheet').classList.toggle('open',v);$('sheet').setAttribute('aria-hidden',!v)}
+$('sndBtn').onclick=()=>toggle(true);
+$('app').addEventListener('click',e=>{if(!e.target.closest('.sheet,#sndBtn'))toggle(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')toggle(false)});
+$('theme').onclick=()=>{const d=document.documentElement,dark=getComputedStyle(d).getPropertyValue('--bg1').trim()==='#10201f';d.setAttribute('data-theme',dark?'light':'dark')};
+draw();
+</script>
+</body>
+</html>
